@@ -1,0 +1,6 @@
+backup_file=backups/cardputer-adv-flash-20260531-162550-8mb.bin
+chip=ESP32-S3
+flash_size=8MB
+mac=50:78:7d:ce:06:18
+port_at_backup=/dev/cu.usbmodem2101
+created_at=2026-05-31 16:41:42 +0800

@@ -1,0 +1,7 @@
+.venv/
+src/heat_cloud_config.local.h
+.pio/
+.vscode/
+.pio-core/
+.DS_Store
+ESP32-Paxcounter/

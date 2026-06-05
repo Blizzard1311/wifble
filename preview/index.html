@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cardputer-Adv V2 Minimal List Preview</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <aside class="spec-panel">
+        <div class="panel-card">
+          <p class="eyebrow">LOCAL PREVIEW</p>
+          <h1>Cardputer-Adv V2 Preview</h1>
+          <p class="intro">
+            This browser mock is for pre-flash confirmation. The current direction is a
+            minimal list UI focused on hierarchy, readability, and navigation only.
+          </p>
+        </div>
+
+        <div class="panel-card">
+          <h2>Structure</h2>
+          <ul class="flat-list">
+            <li>`Home`: `Heat / Remote / Codex`</li>
+            <li>`Heat Menu`: `Summary / WiFi / BLE / Log`</li>
+            <li>Every page uses one single-column list layout</li>
+          </ul>
+        </div>
+
+        <div class="panel-card">
+          <h2>Notes</h2>
+          <ul class="flat-list">
+            <li>Priority is small-screen readability, not dense information</li>
+            <li>WiFi, BLE, and log rows are mock data</li>
+            <li>The device screen no longer shows key hints</li>
+            <li>After confirmation, this structure can be synced into firmware</li>
+          </ul>
+        </div>
+      </aside>
+
+      <main class="preview-panel">
+        <div class="preview-toolbar">
+          <div class="toolbar-copy">Preview Mode</div>
+          <div class="mode-switch" role="group" aria-label="Preview mode switch">
+            <button type="button" class="mode-button is-active" data-mode="device">
+              Device Only
+            </button>
+            <button type="button" class="mode-button" data-mode="full">
+              Full Layout
+            </button>
+          </div>
+        </div>
+
+        <div class="device-frame">
+          <div class="device-topbar">
+            <span>Cardputer-Adv Minimal List Preview</span>
+            <span class="top-status">Keyboard only</span>
+          </div>
+
+          <div class="screen-stage">
+            <div class="screen-scale">
+              <section class="screen" id="screen" tabindex="0" aria-label="Cardputer Preview Screen">
+                <div class="screen-header">
+                  <div class="screen-brand">Cardputer-Adv</div>
+                  <div class="screen-title" id="screen-title">HOME</div>
+                </div>
+                <div class="screen-subtitle" id="screen-subtitle">
+                  Minimal list navigation
+                </div>
+
+                <div class="screen-content" id="screen-content"></div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

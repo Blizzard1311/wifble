@@ -130,16 +130,17 @@ HTML_PAGE = """<!doctype html>
       font-size: 13px;
     }
     .panel-row {
-      display: grid;
-      grid-template-columns: 2fr 1fr;
-      gap: 14px;
       margin-bottom: 16px;
+    }
+    .chart-card {
+      padding-bottom: 12px;
     }
     .section-title {
       margin: 0 0 12px;
       font-size: 16px;
     }
     .chart-wrap {
+      position: relative;
       background: rgba(23, 35, 58, 0.7);
       border-radius: 12px;
       padding: 12px;
@@ -177,6 +178,38 @@ HTML_PAGE = """<!doctype html>
     .metric-pill.heat::before { background: var(--brand); }
     .metric-pill.raw::before { background: var(--brand-2); }
     .metric-pill.wifi::before { background: var(--warn); }
+    .chart-tooltip {
+      position: absolute;
+      min-width: 190px;
+      pointer-events: none;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(11, 18, 32, 0.95);
+      color: var(--text);
+      font-size: 12px;
+      line-height: 1.5;
+      box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+      opacity: 0;
+      transform: translate(-9999px, -9999px);
+      transition: opacity 0.12s ease;
+      z-index: 2;
+    }
+    .chart-tooltip.visible {
+      opacity: 1;
+    }
+    .chart-tooltip .time {
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .chart-tooltip .row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .chart-tooltip .label-inline {
+      color: var(--muted);
+    }
     svg {
       width: 100%;
       height: 230px;
@@ -203,22 +236,23 @@ HTML_PAGE = """<!doctype html>
     .legend .wifi::before { background: var(--warn); }
     .note-list {
       display: grid;
-      gap: 12px;
+      gap: 10px;
+      margin-top: 12px;
     }
     .note-item {
-      padding: 12px;
+      padding: 10px 12px;
       border-radius: 12px;
       border: 1px solid var(--line);
-      background: rgba(23, 35, 58, 0.7);
+      background: rgba(11, 18, 32, 0.4);
       color: var(--muted);
-      font-size: 13px;
-      line-height: 1.6;
+      font-size: 12px;
+      line-height: 1.55;
     }
     .note-item strong {
       display: block;
       color: var(--text);
-      margin-bottom: 4px;
-      font-size: 14px;
+      margin-bottom: 2px;
+      font-size: 12px;
     }
     table {
       width: 100%;
@@ -240,7 +274,6 @@ HTML_PAGE = """<!doctype html>
     .muted { color: var(--muted); }
     @media (max-width: 960px) {
       .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .panel-row { grid-template-columns: 1fr; }
     }
     @media (max-width: 640px) {
       .wrap { padding: 16px; }
@@ -287,7 +320,7 @@ HTML_PAGE = """<!doctype html>
     </div>
 
     <div class="panel-row">
-      <div class="card">
+      <div class="card chart-card">
         <h2 class="section-title">最近记录趋势</h2>
         <div class="chart-wrap">
           <div class="chart-metrics">
@@ -295,6 +328,7 @@ HTML_PAGE = """<!doctype html>
             <span class="metric-pill raw">原始热力(未封顶) <strong id="rawMetric">-</strong></span>
             <span class="metric-pill wifi">近场 Wi-Fi 数 <strong id="wifiMetric">-</strong></span>
           </div>
+          <div class="chart-tooltip" id="chartTooltip"></div>
           <svg id="chart" viewBox="0 0 880 230" preserveAspectRatio="none">
             <text x="18" y="122" fill="#91a0bb" font-size="12" text-anchor="middle" transform="rotate(-90 18 122)">Y 轴：指标数值</text>
             <line x1="48" y1="12" x2="48" y2="200" stroke="#30415f" stroke-width="1"></line>
@@ -304,44 +338,49 @@ HTML_PAGE = """<!doctype html>
             <text id="yTop" x="42" y="16" fill="#91a0bb" font-size="12" text-anchor="end">100</text>
             <text id="yMid" x="42" y="110" fill="#91a0bb" font-size="12" text-anchor="end">50</text>
             <text id="yBottom" x="42" y="204" fill="#91a0bb" font-size="12" text-anchor="end">0</text>
+            <line id="hoverLine" x1="0" y1="12" x2="0" y2="200" stroke="#5a6f92" stroke-width="1" stroke-dasharray="4 4" opacity="0"></line>
             <polyline id="heatLine" fill="none" stroke="#5cc8ff" stroke-width="3" points=""></polyline>
             <polyline id="rawLine" fill="none" stroke="#7ef29a" stroke-width="2.5" points=""></polyline>
             <polyline id="wifiLine" fill="none" stroke="#ffb65c" stroke-width="2" points=""></polyline>
+            <circle id="heatPoint" cx="0" cy="0" r="4" fill="#5cc8ff" opacity="0"></circle>
+            <circle id="rawPoint" cx="0" cy="0" r="4" fill="#7ef29a" opacity="0"></circle>
+            <circle id="wifiPoint" cx="0" cy="0" r="4" fill="#ffb65c" opacity="0"></circle>
             <text id="xStart" x="48" y="218" fill="#91a0bb" font-size="12" text-anchor="start">-</text>
             <text id="xMid" x="449" y="218" fill="#91a0bb" font-size="12" text-anchor="middle">-</text>
             <text id="xEnd" x="850" y="218" fill="#91a0bb" font-size="12" text-anchor="end">-</text>
             <text x="449" y="228" fill="#91a0bb" font-size="12" text-anchor="middle">X 轴：上传时间（北京时间）</text>
+            <rect id="hoverOverlay" x="48" y="12" width="802" height="188" fill="transparent"></rect>
           </svg>
           <div class="legend">
             <span class="heat">热力值</span>
             <span class="raw">原始热力(未封顶)</span>
             <span class="wifi">近场 Wi-Fi 数</span>
           </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2 class="section-title">指标说明</h2>
-        <div class="note-list">
-          <div class="note-item">
-            <strong>热力值</strong>
-            平滑后的现场热力显示值，设备端显示范围固定为 0 到 99，适合快速观察趋势。
-          </div>
-          <div class="note-item">
-            <strong>原始热力(未封顶)</strong>
-            未做 99 封顶的原始密度值，更适合区分高密度场景，后续分析优先看这一列。
-          </div>
-          <div class="note-item">
-            <strong>近场 Wi-Fi 数</strong>
-            RSSI 达到近场阈值后纳入热力计算的 Wi-Fi 数量，不等于环境中全部扫描到的 Wi-Fi 总数。
-          </div>
-          <div class="note-item">
-            <strong>近场 BLE 数</strong>
-            RSSI 达到近场阈值后纳入热力计算的 BLE 数量，和 Wi-Fi 一起构成当前热力评分基础。
-          </div>
-          <div class="note-item">
-            <strong>时间说明</strong>
-            趋势图 X 轴和表格里的“上传时间”使用服务器接收数据时记录的北京时间；表格里的“采样时间”仍然是 ADV 开机后的相对时间，不是实时时钟。
+          <div class="note-list">
+            <div class="note-item">
+              <strong>指标说明</strong>
+              指标说明现在放在趋势图下方，并缩小为辅助说明，避免继续占用右侧主空间。
+            </div>
+            <div class="note-item">
+              <strong>热力值</strong>
+              平滑后的现场热力显示值，设备端显示范围固定为 0 到 99，适合快速观察趋势。
+            </div>
+            <div class="note-item">
+              <strong>原始热力(未封顶)</strong>
+              未做 99 封顶的原始密度值，更适合区分高密度场景，后续分析优先看这一列。
+            </div>
+            <div class="note-item">
+              <strong>近场 Wi-Fi 数</strong>
+              RSSI 达到近场阈值后纳入热力计算的 Wi-Fi 数量，不等于环境中全部扫描到的 Wi-Fi 总数。
+            </div>
+            <div class="note-item">
+              <strong>近场 BLE 数</strong>
+              RSSI 达到近场阈值后纳入热力计算的 BLE 数量，和 Wi-Fi 一起构成当前热力评分基础。
+            </div>
+            <div class="note-item">
+              <strong>时间说明</strong>
+              趋势图 X 轴和表格里的“上传时间”使用服务器接收数据时记录的北京时间；表格里的“采样时间”仍然是 ADV 开机后的相对时间，不是实时时钟。
+            </div>
           </div>
         </div>
       </div>
@@ -407,6 +446,66 @@ HTML_PAGE = """<!doctype html>
       }).join(" ");
     }
 
+    function chartPointX(index, count, left, right) {
+      return count <= 1 ? (left + right) / 2 : left + (index * (right - left)) / (count - 1);
+    }
+
+    function chartPointY(value, maxValue, top, bottom) {
+      return bottom - (Number(value || 0) / maxValue) * (bottom - top);
+    }
+
+    function setHoverState(index, chartRecords, heatValues, rawValues, wifiValues, maxValue) {
+      const tooltip = document.getElementById("chartTooltip");
+      const hoverLine = document.getElementById("hoverLine");
+      const heatPoint = document.getElementById("heatPoint");
+      const rawPoint = document.getElementById("rawPoint");
+      const wifiPoint = document.getElementById("wifiPoint");
+      const left = 48;
+      const right = 850;
+      const top = 12;
+      const bottom = 200;
+
+      if (index < 0 || index >= chartRecords.length) {
+        tooltip.classList.remove("visible");
+        hoverLine.setAttribute("opacity", "0");
+        heatPoint.setAttribute("opacity", "0");
+        rawPoint.setAttribute("opacity", "0");
+        wifiPoint.setAttribute("opacity", "0");
+        return;
+      }
+
+      const x = chartPointX(index, chartRecords.length, left, right);
+      const heatY = chartPointY(heatValues[index], maxValue, top, bottom);
+      const rawY = chartPointY(rawValues[index], maxValue, top, bottom);
+      const wifiY = chartPointY(wifiValues[index], maxValue, top, bottom);
+      const record = chartRecords[index];
+      const payload = record.payload || {};
+
+      hoverLine.setAttribute("x1", String(x));
+      hoverLine.setAttribute("x2", String(x));
+      hoverLine.setAttribute("opacity", "1");
+      heatPoint.setAttribute("cx", String(x));
+      heatPoint.setAttribute("cy", String(heatY));
+      heatPoint.setAttribute("opacity", "1");
+      rawPoint.setAttribute("cx", String(x));
+      rawPoint.setAttribute("cy", String(rawY));
+      rawPoint.setAttribute("opacity", "1");
+      wifiPoint.setAttribute("cx", String(x));
+      wifiPoint.setAttribute("cy", String(wifiY));
+      wifiPoint.setAttribute("opacity", "1");
+
+      tooltip.innerHTML = `
+        <div class="time">${formatServerTime(record.server_time)}</div>
+        <div class="row"><span class="label-inline">热力值</span><strong>${toText(payload.heat)}</strong></div>
+        <div class="row"><span class="label-inline">原始热力(未封顶)</span><strong>${toText(payload.raw_uncapped)}</strong></div>
+        <div class="row"><span class="label-inline">近场 Wi-Fi 数</span><strong>${toText(payload.wifi_kept)}</strong></div>
+        <div class="row"><span class="label-inline">近场 BLE 数</span><strong>${toText(payload.ble_kept)}</strong></div>
+      `;
+      tooltip.style.left = `${Math.max(12, Math.min(x + 14, 660))}px`;
+      tooltip.style.top = `${Math.max(48, heatY - 26)}px`;
+      tooltip.classList.add("visible");
+    }
+
     async function refreshData() {
       const response = await fetch(latestUrl, { cache: "no-store" });
       const data = await response.json();
@@ -446,6 +545,25 @@ HTML_PAGE = """<!doctype html>
       document.getElementById("xStart").textContent = chartTimes.length ? chartTimes[0] : "-";
       document.getElementById("xMid").textContent = chartTimes.length ? chartTimes[middleIndex] : "-";
       document.getElementById("xEnd").textContent = chartTimes.length ? chartTimes[chartTimes.length - 1] : "-";
+
+      const overlay = document.getElementById("hoverOverlay");
+      overlay.onmousemove = (event) => {
+        if (!chartRecords.length) return;
+        const svg = document.getElementById("chart");
+        const point = svg.createSVGPoint();
+        point.x = event.clientX;
+        point.y = event.clientY;
+        const cursor = point.matrixTransform(svg.getScreenCTM().inverse());
+        const left = 48;
+        const right = 850;
+        const ratio = Math.max(0, Math.min(1, (cursor.x - left) / (right - left)));
+        const index = Math.round(ratio * (chartRecords.length - 1));
+        setHoverState(index, chartRecords, heatValues, rawValues, wifiValues, maxValue);
+      };
+      overlay.onmouseleave = () => {
+        setHoverState(-1, chartRecords, heatValues, rawValues, wifiValues, maxValue);
+      };
+      setHoverState(chartRecords.length - 1, chartRecords, heatValues, rawValues, wifiValues, maxValue);
 
       const recordRows = records.slice(-20).reverse().map((record) => {
         const payload = record.payload || {};

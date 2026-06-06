@@ -351,7 +351,7 @@ HTML_PAGE = """<!doctype html>
             <text id="xStart" x="48" y="247" fill="#91a0bb" font-size="12" text-anchor="start">-</text>
             <text id="xMid" x="449" y="247" fill="#91a0bb" font-size="12" text-anchor="middle">-</text>
             <text id="xEnd" x="850" y="247" fill="#91a0bb" font-size="12" text-anchor="end">-</text>
-            <text x="449" y="268" fill="#91a0bb" font-size="12" text-anchor="middle">X 轴：ADV 采样时间 / 采样序列</text>
+            <text x="449" y="268" fill="#91a0bb" font-size="12" text-anchor="middle">X 轴：上传时间（北京时间）</text>
             <rect id="hoverOverlay" x="48" y="16" width="802" height="210" fill="transparent"></rect>
           </svg>
           <div class="legend">
@@ -382,7 +382,7 @@ HTML_PAGE = """<!doctype html>
             </div>
             <div class="note-item">
               <strong>时间说明</strong>
-              趋势图 X 轴优先使用 ADV 上传载荷里的“采样时间”和会话编号，表示设备实际采样顺序；表格里的“上传时间”仍然是服务器接收数据时记录的北京时间。由于 ADV 当前没有实时时钟，“采样时间”仍然是开机后的相对时间。
+              趋势图 X 轴和表格里的“上传时间”使用服务器接收数据时记录的北京时间；表格里的“采样时间”是 ADV 当前开机会话内的相对扫描时刻，例如 00:07 表示本次会话开始后约第 7 秒完成扫描，并不代表绝对数据时间。
             </div>
           </div>
         </div>
@@ -438,46 +438,6 @@ HTML_PAGE = """<!doctype html>
       if (value === null || value === undefined || value === "") return "-";
       const formatted = formatServerTime(value);
       return formatted.length >= 8 ? formatted.slice(-8) : formatted;
-    }
-
-    function sessionSuffix(value) {
-      const text = toText(value);
-      if (text === "-") return "-";
-      const match = text.match(/(\\d+)$/);
-      if (!match) return text;
-      return `S${match[1]}`;
-    }
-
-    function formatSampleAxisLabel(record) {
-      const payload = (record && record.payload) || {};
-      const sampleTime = toText(payload.time);
-      const session = sessionSuffix(payload.session_name);
-      if (sampleTime !== "-" && session !== "-") return `${session}@${sampleTime}`;
-      if (sampleTime !== "-") return sampleTime;
-      if (session !== "-") return session;
-      return formatServerClock(record && record.server_time);
-    }
-
-    function buildChartRecords(records) {
-      const seen = new Set();
-      const unique = [];
-      for (const record of records) {
-        const payload = (record && record.payload) || {};
-        if (payload.heat === undefined) continue;
-        const signature = [
-          toText(payload.device_id),
-          toText(payload.session_name),
-          toText(payload.time),
-          toText(payload.heat),
-          toText(payload.raw_uncapped),
-          toText(payload.wifi_kept),
-          toText(payload.ble_kept),
-        ].join("|");
-        if (seen.has(signature)) continue;
-        seen.add(signature);
-        unique.push(record);
-      }
-      return unique;
     }
 
     function buildPolyline(values, maxValue, left, right, top, bottom) {
@@ -571,7 +531,7 @@ HTML_PAGE = """<!doctype html>
       document.getElementById("maxRawUncapped").textContent = toText(stats.max_recent_raw_uncapped);
       document.getElementById("latestServerTime").textContent = `最近上传 ${formatServerTime(stats.latest_server_time)}`;
 
-      const chartRecords = buildChartRecords(records);
+      const chartRecords = records.filter((record) => record.payload && record.payload.heat !== undefined);
       const heatValues = chartRecords.map((record) => Number(record.payload.heat || 0));
       const rawValues = chartRecords.map((record) => Number(record.payload.raw_uncapped || 0));
       const wifiValues = chartRecords.map((record) => Number(record.payload.wifi_kept || 0));
@@ -585,7 +545,7 @@ HTML_PAGE = """<!doctype html>
       document.getElementById("yTop").textContent = String(maxValue);
       document.getElementById("yMid").textContent = String(Math.round(maxValue / 2));
       document.getElementById("yBottom").textContent = "0";
-      const chartTimes = chartRecords.map((record) => formatSampleAxisLabel(record));
+      const chartTimes = chartRecords.map((record) => formatServerClock(record.server_time));
       const middleIndex = chartTimes.length ? Math.floor((chartTimes.length - 1) / 2) : 0;
       document.getElementById("xStart").textContent = chartTimes.length ? chartTimes[0] : "-";
       document.getElementById("xMid").textContent = chartTimes.length ? chartTimes[middleIndex] : "-";

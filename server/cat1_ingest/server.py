@@ -145,7 +145,7 @@ HTML_PAGE = """<!doctype html>
       border-radius: 12px;
       padding: 12px;
       border: 1px solid var(--line);
-      min-height: 400px;
+      min-height: 480px;
     }
     .chart-metrics {
       display: flex;
@@ -197,6 +197,7 @@ HTML_PAGE = """<!doctype html>
     }
     .chart-tooltip.visible {
       opacity: 1;
+      transform: translate(0, 0);
     }
     .chart-tooltip .time {
       color: var(--muted);
@@ -212,7 +213,7 @@ HTML_PAGE = """<!doctype html>
     }
     svg {
       width: 100%;
-      height: 300px;
+      height: 360px;
       display: block;
     }
     .legend {
@@ -331,27 +332,27 @@ HTML_PAGE = """<!doctype html>
             <span class="metric-pill wifi">近场 Wi-Fi 数 <strong id="wifiMetric">-</strong></span>
           </div>
           <div class="chart-tooltip" id="chartTooltip"></div>
-          <svg id="chart" viewBox="0 0 880 230" preserveAspectRatio="none">
-            <text x="18" y="122" fill="#91a0bb" font-size="12" text-anchor="middle" transform="rotate(-90 18 122)">Y 轴：指标数值</text>
-            <line x1="48" y1="12" x2="48" y2="200" stroke="#30415f" stroke-width="1"></line>
-            <line x1="48" y1="12" x2="850" y2="12" stroke="#26344f" stroke-width="1" stroke-dasharray="4 4"></line>
-            <line x1="48" y1="106" x2="850" y2="106" stroke="#26344f" stroke-width="1" stroke-dasharray="4 4"></line>
-            <line x1="48" y1="200" x2="850" y2="200" stroke="#26344f" stroke-width="1"></line>
+          <svg id="chart" viewBox="0 0 880 290" preserveAspectRatio="none">
+            <text x="18" y="126" fill="#91a0bb" font-size="12" text-anchor="middle" transform="rotate(-90 18 126)">Y 轴：指标数值</text>
+            <line x1="48" y1="16" x2="48" y2="226" stroke="#30415f" stroke-width="1"></line>
+            <line x1="48" y1="16" x2="850" y2="16" stroke="#26344f" stroke-width="1" stroke-dasharray="4 4"></line>
+            <line x1="48" y1="121" x2="850" y2="121" stroke="#26344f" stroke-width="1" stroke-dasharray="4 4"></line>
+            <line x1="48" y1="226" x2="850" y2="226" stroke="#26344f" stroke-width="1"></line>
             <text id="yTop" x="42" y="16" fill="#91a0bb" font-size="12" text-anchor="end">100</text>
-            <text id="yMid" x="42" y="110" fill="#91a0bb" font-size="12" text-anchor="end">50</text>
-            <text id="yBottom" x="42" y="204" fill="#91a0bb" font-size="12" text-anchor="end">0</text>
-            <line id="hoverLine" x1="0" y1="12" x2="0" y2="200" stroke="#5a6f92" stroke-width="1" stroke-dasharray="4 4" opacity="0"></line>
+            <text id="yMid" x="42" y="125" fill="#91a0bb" font-size="12" text-anchor="end">50</text>
+            <text id="yBottom" x="42" y="230" fill="#91a0bb" font-size="12" text-anchor="end">0</text>
+            <line id="hoverLine" x1="0" y1="16" x2="0" y2="226" stroke="#5a6f92" stroke-width="1" stroke-dasharray="4 4" opacity="0"></line>
             <polyline id="heatLine" fill="none" stroke="#5cc8ff" stroke-width="3" points=""></polyline>
             <polyline id="rawLine" fill="none" stroke="#7ef29a" stroke-width="2.5" points=""></polyline>
             <polyline id="wifiLine" fill="none" stroke="#ffb65c" stroke-width="2" points=""></polyline>
             <circle id="heatPoint" cx="0" cy="0" r="4" fill="#5cc8ff" opacity="0"></circle>
             <circle id="rawPoint" cx="0" cy="0" r="4" fill="#7ef29a" opacity="0"></circle>
             <circle id="wifiPoint" cx="0" cy="0" r="4" fill="#ffb65c" opacity="0"></circle>
-            <text id="xStart" x="48" y="218" fill="#91a0bb" font-size="12" text-anchor="start">-</text>
-            <text id="xMid" x="449" y="218" fill="#91a0bb" font-size="12" text-anchor="middle">-</text>
-            <text id="xEnd" x="850" y="218" fill="#91a0bb" font-size="12" text-anchor="end">-</text>
-            <text x="449" y="228" fill="#91a0bb" font-size="12" text-anchor="middle">X 轴：上传时间（北京时间）</text>
-            <rect id="hoverOverlay" x="48" y="12" width="802" height="188" fill="transparent"></rect>
+            <text id="xStart" x="48" y="247" fill="#91a0bb" font-size="12" text-anchor="start">-</text>
+            <text id="xMid" x="449" y="247" fill="#91a0bb" font-size="12" text-anchor="middle">-</text>
+            <text id="xEnd" x="850" y="247" fill="#91a0bb" font-size="12" text-anchor="end">-</text>
+            <text x="449" y="268" fill="#91a0bb" font-size="12" text-anchor="middle">X 轴：上传时间（北京时间）</text>
+            <rect id="hoverOverlay" x="48" y="16" width="802" height="210" fill="transparent"></rect>
           </svg>
           <div class="legend">
             <span class="heat">热力值</span>
@@ -464,8 +465,8 @@ HTML_PAGE = """<!doctype html>
       const wifiPoint = document.getElementById("wifiPoint");
       const left = 48;
       const right = 850;
-      const top = 12;
-      const bottom = 200;
+      const top = 16;
+      const bottom = 226;
 
       if (index < 0 || index >= chartRecords.length) {
         tooltip.classList.remove("visible");
@@ -504,7 +505,7 @@ HTML_PAGE = """<!doctype html>
         <div class="row"><span class="label-inline">近场 BLE 数</span><strong>${toText(payload.ble_kept)}</strong></div>
       `;
       tooltip.style.left = `${Math.max(12, Math.min(x + 14, 660))}px`;
-      tooltip.style.top = `${Math.max(48, heatY - 26)}px`;
+      tooltip.style.top = `${Math.max(56, Math.min(heatY - 28, 250))}px`;
       tooltip.classList.add("visible");
     }
 
@@ -533,9 +534,9 @@ HTML_PAGE = """<!doctype html>
       const rawValues = chartRecords.map((record) => Number(record.payload.raw_uncapped || 0));
       const wifiValues = chartRecords.map((record) => Number(record.payload.wifi_kept || 0));
       const maxValue = Math.max(100, ...heatValues, ...rawValues, ...wifiValues);
-      document.getElementById("heatLine").setAttribute("points", buildPolyline(heatValues, maxValue, 48, 850, 12, 200));
-      document.getElementById("rawLine").setAttribute("points", buildPolyline(rawValues, maxValue, 48, 850, 12, 200));
-      document.getElementById("wifiLine").setAttribute("points", buildPolyline(wifiValues, maxValue, 48, 850, 12, 200));
+      document.getElementById("heatLine").setAttribute("points", buildPolyline(heatValues, maxValue, 48, 850, 16, 226));
+      document.getElementById("rawLine").setAttribute("points", buildPolyline(rawValues, maxValue, 48, 850, 16, 226));
+      document.getElementById("wifiLine").setAttribute("points", buildPolyline(wifiValues, maxValue, 48, 850, 16, 226));
       document.getElementById("heatMetric").textContent = heatValues.length ? String(heatValues[heatValues.length - 1]) : "-";
       document.getElementById("rawMetric").textContent = rawValues.length ? String(rawValues[rawValues.length - 1]) : "-";
       document.getElementById("wifiMetric").textContent = wifiValues.length ? String(wifiValues[wifiValues.length - 1]) : "-";

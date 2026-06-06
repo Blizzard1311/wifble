@@ -351,7 +351,7 @@ HTML_PAGE = """<!doctype html>
             <text id="xStart" x="48" y="247" fill="#91a0bb" font-size="12" text-anchor="start">-</text>
             <text id="xMid" x="449" y="247" fill="#91a0bb" font-size="12" text-anchor="middle">-</text>
             <text id="xEnd" x="850" y="247" fill="#91a0bb" font-size="12" text-anchor="end">-</text>
-            <text x="449" y="268" fill="#91a0bb" font-size="12" text-anchor="middle">X 轴：上传时间（北京时间）</text>
+            <text x="449" y="268" fill="#91a0bb" font-size="12" text-anchor="middle">X 轴：ADV 采样时间 / 采样序列</text>
             <rect id="hoverOverlay" x="48" y="16" width="802" height="210" fill="transparent"></rect>
           </svg>
           <div class="legend">
@@ -382,7 +382,7 @@ HTML_PAGE = """<!doctype html>
             </div>
             <div class="note-item">
               <strong>时间说明</strong>
-              趋势图 X 轴和表格里的“上传时间”使用服务器接收数据时记录的北京时间；表格里的“采样时间”仍然是 ADV 开机后的相对时间，不是实时时钟。
+              趋势图 X 轴优先使用 ADV 上传载荷里的“采样时间”和会话编号，表示设备实际采样顺序；表格里的“上传时间”仍然是服务器接收数据时记录的北京时间。由于 ADV 当前没有实时时钟，“采样时间”仍然是开机后的相对时间。
             </div>
           </div>
         </div>
@@ -438,6 +438,46 @@ HTML_PAGE = """<!doctype html>
       if (value === null || value === undefined || value === "") return "-";
       const formatted = formatServerTime(value);
       return formatted.length >= 8 ? formatted.slice(-8) : formatted;
+    }
+
+    function sessionSuffix(value) {
+      const text = toText(value);
+      if (text === "-") return "-";
+      const match = text.match(/(\\d+)$/);
+      if (!match) return text;
+      return `S${match[1]}`;
+    }
+
+    function formatSampleAxisLabel(record) {
+      const payload = (record && record.payload) || {};
+      const sampleTime = toText(payload.time);
+      const session = sessionSuffix(payload.session_name);
+      if (sampleTime !== "-" && session !== "-") return `${session}@${sampleTime}`;
+      if (sampleTime !== "-") return sampleTime;
+      if (session !== "-") return session;
+      return formatServerClock(record && record.server_time);
+    }
+
+    function buildChartRecords(records) {
+      const seen = new Set();
+      const unique = [];
+      for (const record of records) {
+        const payload = (record && record.payload) || {};
+        if (payload.heat === undefined) continue;
+        const signature = [
+          toText(payload.device_id),
+          toText(payload.session_name),
+          toText(payload.time),
+          toText(payload.heat),
+          toText(payload.raw_uncapped),
+          toText(payload.wifi_kept),
+          toText(payload.ble_kept),
+        ].join("|");
+        if (seen.has(signature)) continue;
+        seen.add(signature);
+        unique.push(record);
+      }
+      return unique;
     }
 
     function buildPolyline(values, maxValue, left, right, top, bottom) {
@@ -498,7 +538,9 @@ HTML_PAGE = """<!doctype html>
       wifiPoint.setAttribute("opacity", "1");
 
       tooltip.innerHTML = `
-        <div class="time">${formatServerTime(record.server_time)}</div>
+        <div class="time">上传 ${formatServerTime(record.server_time)}</div>
+        <div class="row"><span class="label-inline">会话编号</span><strong>${toText(payload.session_name)}</strong></div>
+        <div class="row"><span class="label-inline">采样时间</span><strong>${toText(payload.time)}</strong></div>
         <div class="row"><span class="label-inline">热力值</span><strong>${toText(payload.heat)}</strong></div>
         <div class="row"><span class="label-inline">原始热力(未封顶)</span><strong>${toText(payload.raw_uncapped)}</strong></div>
         <div class="row"><span class="label-inline">近场 Wi-Fi 数</span><strong>${toText(payload.wifi_kept)}</strong></div>
@@ -529,7 +571,7 @@ HTML_PAGE = """<!doctype html>
       document.getElementById("maxRawUncapped").textContent = toText(stats.max_recent_raw_uncapped);
       document.getElementById("latestServerTime").textContent = `最近上传 ${formatServerTime(stats.latest_server_time)}`;
 
-      const chartRecords = records.filter((record) => record.payload && record.payload.heat !== undefined);
+      const chartRecords = buildChartRecords(records);
       const heatValues = chartRecords.map((record) => Number(record.payload.heat || 0));
       const rawValues = chartRecords.map((record) => Number(record.payload.raw_uncapped || 0));
       const wifiValues = chartRecords.map((record) => Number(record.payload.wifi_kept || 0));
@@ -543,7 +585,7 @@ HTML_PAGE = """<!doctype html>
       document.getElementById("yTop").textContent = String(maxValue);
       document.getElementById("yMid").textContent = String(Math.round(maxValue / 2));
       document.getElementById("yBottom").textContent = "0";
-      const chartTimes = chartRecords.map((record) => formatServerClock(record.server_time));
+      const chartTimes = chartRecords.map((record) => formatSampleAxisLabel(record));
       const middleIndex = chartTimes.length ? Math.floor((chartTimes.length - 1) / 2) : 0;
       document.getElementById("xStart").textContent = chartTimes.length ? chartTimes[0] : "-";
       document.getElementById("xMid").textContent = chartTimes.length ? chartTimes[middleIndex] : "-";

@@ -144,8 +144,39 @@ HTML_PAGE = """<!doctype html>
       border-radius: 12px;
       padding: 12px;
       border: 1px solid var(--line);
-      min-height: 270px;
+      min-height: 330px;
     }
+    .chart-metrics {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .metric-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(11, 18, 32, 0.65);
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .metric-pill strong {
+      color: var(--text);
+      font-size: 14px;
+    }
+    .metric-pill::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+    .metric-pill.heat::before { background: var(--brand); }
+    .metric-pill.raw::before { background: var(--brand-2); }
+    .metric-pill.wifi::before { background: var(--warn); }
     svg {
       width: 100%;
       height: 230px;
@@ -259,11 +290,27 @@ HTML_PAGE = """<!doctype html>
       <div class="card">
         <h2 class="section-title">最近记录趋势</h2>
         <div class="chart-wrap">
+          <div class="chart-metrics">
+            <span class="metric-pill heat">热力值 <strong id="heatMetric">-</strong></span>
+            <span class="metric-pill raw">原始热力(未封顶) <strong id="rawMetric">-</strong></span>
+            <span class="metric-pill wifi">近场 Wi-Fi 数 <strong id="wifiMetric">-</strong></span>
+          </div>
           <svg id="chart" viewBox="0 0 880 230" preserveAspectRatio="none">
-            <line x1="0" y1="200" x2="880" y2="200" stroke="#26344f" stroke-width="1"></line>
+            <text x="18" y="122" fill="#91a0bb" font-size="12" text-anchor="middle" transform="rotate(-90 18 122)">Y 轴：指标数值</text>
+            <line x1="48" y1="12" x2="48" y2="200" stroke="#30415f" stroke-width="1"></line>
+            <line x1="48" y1="12" x2="850" y2="12" stroke="#26344f" stroke-width="1" stroke-dasharray="4 4"></line>
+            <line x1="48" y1="106" x2="850" y2="106" stroke="#26344f" stroke-width="1" stroke-dasharray="4 4"></line>
+            <line x1="48" y1="200" x2="850" y2="200" stroke="#26344f" stroke-width="1"></line>
+            <text id="yTop" x="42" y="16" fill="#91a0bb" font-size="12" text-anchor="end">100</text>
+            <text id="yMid" x="42" y="110" fill="#91a0bb" font-size="12" text-anchor="end">50</text>
+            <text id="yBottom" x="42" y="204" fill="#91a0bb" font-size="12" text-anchor="end">0</text>
             <polyline id="heatLine" fill="none" stroke="#5cc8ff" stroke-width="3" points=""></polyline>
             <polyline id="rawLine" fill="none" stroke="#7ef29a" stroke-width="2.5" points=""></polyline>
             <polyline id="wifiLine" fill="none" stroke="#ffb65c" stroke-width="2" points=""></polyline>
+            <text id="xStart" x="48" y="218" fill="#91a0bb" font-size="12" text-anchor="start">-</text>
+            <text id="xMid" x="449" y="218" fill="#91a0bb" font-size="12" text-anchor="middle">-</text>
+            <text id="xEnd" x="850" y="218" fill="#91a0bb" font-size="12" text-anchor="end">-</text>
+            <text x="449" y="228" fill="#91a0bb" font-size="12" text-anchor="middle">X 轴：采样时间（设备开机后的相对时间）</text>
           </svg>
           <div class="legend">
             <span class="heat">热力值</span>
@@ -345,11 +392,11 @@ HTML_PAGE = """<!doctype html>
       return chinaDateFormatter.format(date).replaceAll("/", "-");
     }
 
-    function buildPolyline(values, maxValue, width, height) {
+    function buildPolyline(values, maxValue, left, right, top, bottom) {
       if (!values.length || maxValue <= 0) return "";
       return values.map((value, index) => {
-        const x = values.length === 1 ? 0 : (index * width) / (values.length - 1);
-        const y = height - (Number(value || 0) / maxValue) * (height - 10) - 10;
+        const x = values.length === 1 ? (left + right) / 2 : left + (index * (right - left)) / (values.length - 1);
+        const y = bottom - (Number(value || 0) / maxValue) * (bottom - top);
         return `${x.toFixed(2)},${y.toFixed(2)}`;
       }).join(" ");
     }
@@ -379,9 +426,20 @@ HTML_PAGE = """<!doctype html>
       const rawValues = chartRecords.map((record) => Number(record.payload.raw_uncapped || 0));
       const wifiValues = chartRecords.map((record) => Number(record.payload.wifi_kept || 0));
       const maxValue = Math.max(100, ...heatValues, ...rawValues, ...wifiValues);
-      document.getElementById("heatLine").setAttribute("points", buildPolyline(heatValues, maxValue, 880, 230));
-      document.getElementById("rawLine").setAttribute("points", buildPolyline(rawValues, maxValue, 880, 230));
-      document.getElementById("wifiLine").setAttribute("points", buildPolyline(wifiValues, maxValue, 880, 230));
+      document.getElementById("heatLine").setAttribute("points", buildPolyline(heatValues, maxValue, 48, 850, 12, 200));
+      document.getElementById("rawLine").setAttribute("points", buildPolyline(rawValues, maxValue, 48, 850, 12, 200));
+      document.getElementById("wifiLine").setAttribute("points", buildPolyline(wifiValues, maxValue, 48, 850, 12, 200));
+      document.getElementById("heatMetric").textContent = heatValues.length ? String(heatValues[heatValues.length - 1]) : "-";
+      document.getElementById("rawMetric").textContent = rawValues.length ? String(rawValues[rawValues.length - 1]) : "-";
+      document.getElementById("wifiMetric").textContent = wifiValues.length ? String(wifiValues[wifiValues.length - 1]) : "-";
+      document.getElementById("yTop").textContent = String(maxValue);
+      document.getElementById("yMid").textContent = String(Math.round(maxValue / 2));
+      document.getElementById("yBottom").textContent = "0";
+      const chartTimes = chartRecords.map((record) => toText(record.payload.time));
+      const middleIndex = chartTimes.length ? Math.floor((chartTimes.length - 1) / 2) : 0;
+      document.getElementById("xStart").textContent = chartTimes.length ? chartTimes[0] : "-";
+      document.getElementById("xMid").textContent = chartTimes.length ? chartTimes[middleIndex] : "-";
+      document.getElementById("xEnd").textContent = chartTimes.length ? chartTimes[chartTimes.length - 1] : "-";
 
       const recordRows = records.slice(-20).reverse().map((record) => {
         const payload = record.payload || {};

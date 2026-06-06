@@ -145,7 +145,7 @@ HTML_PAGE = """<!doctype html>
       border-radius: 12px;
       padding: 12px;
       border: 1px solid var(--line);
-      min-height: 330px;
+      min-height: 400px;
     }
     .chart-metrics {
       display: flex;
@@ -212,7 +212,7 @@ HTML_PAGE = """<!doctype html>
     }
     svg {
       width: 100%;
-      height: 230px;
+      height: 300px;
       display: block;
     }
     .legend {
@@ -236,6 +236,7 @@ HTML_PAGE = """<!doctype html>
     .legend .wifi::before { background: var(--warn); }
     .note-list {
       display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
       margin-top: 12px;
     }
@@ -274,6 +275,7 @@ HTML_PAGE = """<!doctype html>
     .muted { color: var(--muted); }
     @media (max-width: 960px) {
       .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .note-list { grid-template-columns: 1fr; }
     }
     @media (max-width: 640px) {
       .wrap { padding: 16px; }

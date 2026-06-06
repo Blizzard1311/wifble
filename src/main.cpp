@@ -847,8 +847,10 @@ bool trigger_cat1_heat_upload() {
 }
 
 bool should_auto_upload_cat1_heat() {
-  if (g_cat1_last_upload_attempt_ms == 0) {
-    return millis() >= kCat1AutoUploadIntervalMs;
+  const uint32_t now = millis();
+
+  if (g_cat1_last_upload_success_ms == 0) {
+    return now >= kCat1AutoUploadIntervalMs;
   }
 
   if (g_cat1_last_uploaded_heat >= 0) {
@@ -859,7 +861,7 @@ bool should_auto_upload_cat1_heat() {
     }
   }
 
-  return millis() - g_cat1_last_upload_attempt_ms >= kCat1AutoUploadIntervalMs;
+  return now - g_cat1_last_upload_success_ms >= kCat1AutoUploadIntervalMs;
 }
 
 void maybe_auto_upload_cat1_heat() {

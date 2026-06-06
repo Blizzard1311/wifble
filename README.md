@@ -173,6 +173,7 @@ tool, not an exact people counter or a finalized universal remote.
   - one automatic `CAT1` upload every `15 minutes`
   - the first automatic upload also waits for the first `15-minute` interval instead of uploading immediately at boot
   - background scan/upload continues regardless of whether the UI is left on `HEAT`, `CAT1`, or `HOME`
+  - the `15-minute` cadence is based on the last successful upload; if a scheduled upload fails, later background scans continue retrying instead of waiting a full extra `15 minutes`
   - one immediate extra upload if the current `heat` value changes by more than `50`
   - manual upload from the `CAT1` page still works with `Enter`
 - if only a `Grove` cable is available, the intended prototype wiring is:

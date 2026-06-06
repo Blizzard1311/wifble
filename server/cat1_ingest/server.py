@@ -170,6 +170,25 @@ HTML_PAGE = """<!doctype html>
     .legend .heat::before { background: var(--brand); }
     .legend .raw::before { background: var(--brand-2); }
     .legend .wifi::before { background: var(--warn); }
+    .note-list {
+      display: grid;
+      gap: 12px;
+    }
+    .note-item {
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: rgba(23, 35, 58, 0.7);
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+    .note-item strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -230,7 +249,7 @@ HTML_PAGE = """<!doctype html>
         <div class="sub" id="peakHeat">-</div>
       </div>
       <div class="card">
-        <div class="label">最高原始密度</div>
+        <div class="label">最高原始热力</div>
         <div class="value" id="maxRawUncapped">-</div>
         <div class="sub" id="latestServerTime">-</div>
       </div>
@@ -247,25 +266,37 @@ HTML_PAGE = """<!doctype html>
             <polyline id="wifiLine" fill="none" stroke="#ffb65c" stroke-width="2" points=""></polyline>
           </svg>
           <div class="legend">
-            <span class="heat">heat</span>
-            <span class="raw">raw_uncapped</span>
-            <span class="wifi">wifi_kept</span>
+            <span class="heat">热力值</span>
+            <span class="raw">原始热力(未封顶)</span>
+            <span class="wifi">近场 Wi-Fi 数</span>
           </div>
         </div>
       </div>
 
       <div class="card">
-        <h2 class="section-title">设备汇总</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>设备</th>
-              <th>最近上传</th>
-              <th>条数</th>
-            </tr>
-          </thead>
-          <tbody id="deviceTable"></tbody>
-        </table>
+        <h2 class="section-title">指标说明</h2>
+        <div class="note-list">
+          <div class="note-item">
+            <strong>热力值</strong>
+            平滑后的现场热力显示值，设备端显示范围固定为 0 到 99，适合快速观察趋势。
+          </div>
+          <div class="note-item">
+            <strong>原始热力(未封顶)</strong>
+            未做 99 封顶的原始密度值，更适合区分高密度场景，后续分析优先看这一列。
+          </div>
+          <div class="note-item">
+            <strong>近场 Wi-Fi 数</strong>
+            RSSI 达到近场阈值后纳入热力计算的 Wi-Fi 数量，不等于环境中全部扫描到的 Wi-Fi 总数。
+          </div>
+          <div class="note-item">
+            <strong>近场 BLE 数</strong>
+            RSSI 达到近场阈值后纳入热力计算的 BLE 数量，和 Wi-Fi 一起构成当前热力评分基础。
+          </div>
+          <div class="note-item">
+            <strong>时间说明</strong>
+            页面里的“上传时间”使用服务器接收数据时记录的北京时间；“采样时间”仍然是 ADV 开机后的相对时间，不是实时时钟。
+          </div>
+        </div>
       </div>
     </div>
 
@@ -274,14 +305,14 @@ HTML_PAGE = """<!doctype html>
       <table>
         <thead>
           <tr>
-            <th>server_time</th>
-            <th>device_id</th>
-            <th>session</th>
-            <th>time</th>
-            <th>heat</th>
-            <th>raw_uncapped</th>
-            <th>wifi/ble</th>
-            <th>payload</th>
+            <th>上传时间</th>
+            <th>设备编号</th>
+            <th>会话编号</th>
+            <th>采样时间</th>
+            <th>热力值</th>
+            <th>原始热力(未封顶)</th>
+            <th>近场 Wi-Fi / BLE</th>
+            <th>原始载荷</th>
           </tr>
         </thead>
         <tbody id="recordTable"></tbody>
@@ -294,6 +325,24 @@ HTML_PAGE = """<!doctype html>
 
     function toText(value, fallback = "-") {
       return value === null || value === undefined || value === "" ? fallback : String(value);
+    }
+
+    const chinaDateFormatter = new Intl.DateTimeFormat("zh-CN", {
+      timeZone: "Asia/Shanghai",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
+
+    function formatServerTime(value) {
+      if (value === null || value === undefined || value === "") return "-";
+      const date = new Date(value);
+      if (Number.isNaN(date.getTime())) return toText(value);
+      return chinaDateFormatter.format(date).replaceAll("/", "-");
     }
 
     function buildPolyline(values, maxValue, width, height) {
@@ -314,17 +363,16 @@ HTML_PAGE = """<!doctype html>
 
       const stats = data.stats || {};
       const records = data.records || [];
-      const devices = data.devices || [];
       const latest = records.length ? records[records.length - 1].payload || {} : {};
 
       document.getElementById("totalRecords").textContent = toText(stats.total_records);
-      document.getElementById("totalDevices").textContent = `${toText(stats.total_devices)} 台设备`;
+      document.getElementById("totalDevices").textContent = `累计 ${toText(stats.total_devices)} 台上传设备`;
       document.getElementById("latestHeat").textContent = toText(latest.heat);
       document.getElementById("latestLevel").textContent = `${toText(latest.level)} / ${toText(latest.trend)}`;
       document.getElementById("avgHeat").textContent = toText(stats.avg_recent_heat);
-      document.getElementById("peakHeat").textContent = `最近峰值 ${toText(stats.max_recent_heat)}`;
+      document.getElementById("peakHeat").textContent = `近 50 条峰值 ${toText(stats.max_recent_heat)}`;
       document.getElementById("maxRawUncapped").textContent = toText(stats.max_recent_raw_uncapped);
-      document.getElementById("latestServerTime").textContent = `最近上传 ${toText(stats.latest_server_time)}`;
+      document.getElementById("latestServerTime").textContent = `最近上传 ${formatServerTime(stats.latest_server_time)}`;
 
       const chartRecords = records.filter((record) => record.payload && record.payload.heat !== undefined);
       const heatValues = chartRecords.map((record) => Number(record.payload.heat || 0));
@@ -335,20 +383,11 @@ HTML_PAGE = """<!doctype html>
       document.getElementById("rawLine").setAttribute("points", buildPolyline(rawValues, maxValue, 880, 230));
       document.getElementById("wifiLine").setAttribute("points", buildPolyline(wifiValues, maxValue, 880, 230));
 
-      const deviceRows = devices.map((device) => `
-        <tr>
-          <td class="mono">${toText(device.device_id)}</td>
-          <td>${toText(device.latest_server_time)}</td>
-          <td>${toText(device.count)}</td>
-        </tr>
-      `).join("");
-      document.getElementById("deviceTable").innerHTML = deviceRows || `<tr><td colspan="3" class="muted">暂无数据</td></tr>`;
-
       const recordRows = records.slice(-20).reverse().map((record) => {
         const payload = record.payload || {};
         return `
           <tr>
-            <td>${toText(record.server_time)}</td>
+            <td>${formatServerTime(record.server_time)}</td>
             <td class="mono">${toText(payload.device_id)}</td>
             <td class="mono">${toText(payload.session_name)}</td>
             <td>${toText(payload.time)}</td>

@@ -169,6 +169,10 @@ tool, not an exact people counter or a finalized universal remote.
 - the current field route is:
   - local `SD` logging stays as the primary record
   - `CAT1` can POST the current `HEAT` snapshot as JSON over `4G`
+- the current upload cadence is:
+  - one automatic `CAT1` upload every `15 minutes`
+  - one immediate extra upload if the current `heat` value changes by more than `50`
+  - manual upload from the `CAT1` page still works with `Enter`
 - if only a `Grove` cable is available, the intended prototype wiring is:
   - `ADV G2 -> Cat1 UART_RX`
   - `ADV G1 -> Cat1 UART_TX`
@@ -189,6 +193,10 @@ tool, not an exact people counter or a finalized universal remote.
   - `wifi_total`
   - `ble_kept`
   - `ble_total`
+- the current web dashboard uses simplified Chinese labels for:
+  - `热力值` (`heat`)
+  - `原始热力(未封顶)` (`raw_uncapped`)
+  - `近场 Wi-Fi 数` (`wifi_kept`)
 - see the detailed wiring and validation guide:
   - [ADV_GROVE_CAT1_CN_GUIDE.md](/Users/Kenneth/Documents/M5%20STACK/ADV_GROVE_CAT1_CN_GUIDE.md)
 

@@ -15,6 +15,15 @@ It adds:
 - `GET /api/m5/cat1/download?format=jsonl`
 - `GET /api/m5/cat1/download?format=csv`
 - `GET /m5/cat1`
+- simplified Chinese metric labels and notes for:
+  - `热力值`
+  - `原始热力(未封顶)`
+  - `近场 Wi-Fi 数`
+- server-side receive times are rendered as `Asia/Shanghai` on the web page
+- the page explicitly distinguishes:
+  - server receive time
+  - device uptime-based sampling time
+- a compact single-device-friendly dashboard without device filters
 
 ## Expected runtime paths on Tencent Cloud
 

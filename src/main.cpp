@@ -115,6 +115,8 @@ constexpr size_t kVisibleListRows = 4;
 constexpr size_t kMaxHistoryEntries = 60;
 constexpr size_t kMaxSessionFiles = 60;
 constexpr uint32_t kAutoScanIntervalMs = 60000;
+constexpr uint32_t kCat1AutoUploadIntervalMs = 15UL * 60UL * 1000UL;
+constexpr int kCat1ImmediateUploadHeatDelta = 50;
 constexpr uint32_t kBleScanSeconds = 4;
 constexpr int32_t kWiFiNearRssi = -82;
 constexpr int32_t kBleNearRssi = -88;
@@ -386,6 +388,9 @@ uint32_t g_cat1_last_probe_ms = 0;
 bool g_cat1_probe_running = false;
 String g_cat1_http_status = "IDLE";
 int g_cat1_http_code = 0;
+uint32_t g_cat1_last_upload_attempt_ms = 0;
+uint32_t g_cat1_last_upload_success_ms = 0;
+int g_cat1_last_uploaded_heat = -1;
 
 bool cloud_feature_enabled() {
   return HEAT_CLOUD_ENABLE && strlen(HEAT_CLOUD_WIFI_SSID) > 0 &&
@@ -824,6 +829,42 @@ bool cat1_http_post_test() {
   g_cat1_http_status = "HTTP " + String(status);
   g_cat1_last_error = "HTTP";
   return false;
+}
+
+void note_cat1_upload_result(bool success, uint32_t attempt_ms) {
+  g_cat1_last_upload_attempt_ms = attempt_ms;
+  if (!success) return;
+
+  g_cat1_last_upload_success_ms = attempt_ms;
+  g_cat1_last_uploaded_heat = g_heat_score;
+}
+
+bool trigger_cat1_heat_upload() {
+  const uint32_t attempt_ms = millis();
+  const bool success = cat1_http_post_test();
+  note_cat1_upload_result(success, attempt_ms);
+  return success;
+}
+
+bool should_auto_upload_cat1_heat() {
+  if (g_cat1_last_upload_attempt_ms == 0) {
+    return true;
+  }
+
+  if (g_cat1_last_uploaded_heat >= 0) {
+    int delta = g_heat_score - g_cat1_last_uploaded_heat;
+    if (delta < 0) delta = -delta;
+    if (delta > kCat1ImmediateUploadHeatDelta) {
+      return true;
+    }
+  }
+
+  return millis() - g_cat1_last_upload_attempt_ms >= kCat1AutoUploadIntervalMs;
+}
+
+void maybe_auto_upload_cat1_heat() {
+  if (!should_auto_upload_cat1_heat()) return;
+  trigger_cat1_heat_upload();
 }
 
 String format_time_label() {
@@ -1963,6 +2004,7 @@ void run_scan_cycle() {
   push_history_snapshot();
   append_session_row();
   upload_heat_summary_cloud();
+  maybe_auto_upload_cat1_heat();
   redraw();
 
   Serial.printf("Scan complete: WiFi=%d/%d BLE=%d/%d Heat=%d Raw=%d RawU=%d Level=%s\n",
@@ -2260,7 +2302,7 @@ void loop() {
       } else if (g_screen == AppScreen::Remote) {
         send_remote_command();
       } else if (g_screen == AppScreen::Codex) {
-        cat1_http_post_test();
+        trigger_cat1_heat_upload();
         redraw();
       }
     }

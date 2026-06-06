@@ -437,7 +437,8 @@ HTML_PAGE = """<!doctype html>
     function formatServerClock(value) {
       if (value === null || value === undefined || value === "") return "-";
       const formatted = formatServerTime(value);
-      return formatted.length >= 8 ? formatted.slice(-8) : formatted;
+      if (formatted.length >= 16) return formatted.slice(5, 16);
+      return formatted;
     }
 
     function buildPolyline(values, maxValue, left, right, top, bottom) {
@@ -502,9 +503,9 @@ HTML_PAGE = """<!doctype html>
         <div class="row"><span class="label-inline">会话编号</span><strong>${toText(payload.session_name)}</strong></div>
         <div class="row"><span class="label-inline">采样时间</span><strong>${toText(payload.time)}</strong></div>
         <div class="row"><span class="label-inline">热力值</span><strong>${toText(payload.heat)}</strong></div>
-        <div class="row"><span class="label-inline">原始热力(未封顶)</span><strong>${toText(payload.raw_uncapped)}</strong></div>
-        <div class="row"><span class="label-inline">近场 Wi-Fi 数</span><strong>${toText(payload.wifi_kept)}</strong></div>
-        <div class="row"><span class="label-inline">近场 BLE 数</span><strong>${toText(payload.ble_kept)}</strong></div>
+        <div class="row"><span class="label-inline">原始热力值</span><strong>${toText(payload.raw_uncapped)}</strong></div>
+        <div class="row"><span class="label-inline">近场 Wi-Fi</span><strong>${toText(payload.wifi_kept)}</strong></div>
+        <div class="row"><span class="label-inline">近场 BLE</span><strong>${toText(payload.ble_kept)}</strong></div>
       `;
       tooltip.style.left = `${Math.max(12, Math.min(x + 14, 660))}px`;
       tooltip.style.top = `${Math.max(56, Math.min(heatY - 28, 250))}px`;

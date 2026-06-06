@@ -310,7 +310,7 @@ HTML_PAGE = """<!doctype html>
             <text id="xStart" x="48" y="218" fill="#91a0bb" font-size="12" text-anchor="start">-</text>
             <text id="xMid" x="449" y="218" fill="#91a0bb" font-size="12" text-anchor="middle">-</text>
             <text id="xEnd" x="850" y="218" fill="#91a0bb" font-size="12" text-anchor="end">-</text>
-            <text x="449" y="228" fill="#91a0bb" font-size="12" text-anchor="middle">X 轴：采样时间（设备开机后的相对时间）</text>
+            <text x="449" y="228" fill="#91a0bb" font-size="12" text-anchor="middle">X 轴：上传时间（北京时间）</text>
           </svg>
           <div class="legend">
             <span class="heat">热力值</span>
@@ -341,7 +341,7 @@ HTML_PAGE = """<!doctype html>
           </div>
           <div class="note-item">
             <strong>时间说明</strong>
-            页面里的“上传时间”使用服务器接收数据时记录的北京时间；“采样时间”仍然是 ADV 开机后的相对时间，不是实时时钟。
+            趋势图 X 轴和表格里的“上传时间”使用服务器接收数据时记录的北京时间；表格里的“采样时间”仍然是 ADV 开机后的相对时间，不是实时时钟。
           </div>
         </div>
       </div>
@@ -392,6 +392,12 @@ HTML_PAGE = """<!doctype html>
       return chinaDateFormatter.format(date).replaceAll("/", "-");
     }
 
+    function formatServerClock(value) {
+      if (value === null || value === undefined || value === "") return "-";
+      const formatted = formatServerTime(value);
+      return formatted.length >= 8 ? formatted.slice(-8) : formatted;
+    }
+
     function buildPolyline(values, maxValue, left, right, top, bottom) {
       if (!values.length || maxValue <= 0) return "";
       return values.map((value, index) => {
@@ -435,7 +441,7 @@ HTML_PAGE = """<!doctype html>
       document.getElementById("yTop").textContent = String(maxValue);
       document.getElementById("yMid").textContent = String(Math.round(maxValue / 2));
       document.getElementById("yBottom").textContent = "0";
-      const chartTimes = chartRecords.map((record) => toText(record.payload.time));
+      const chartTimes = chartRecords.map((record) => formatServerClock(record.server_time));
       const middleIndex = chartTimes.length ? Math.floor((chartTimes.length - 1) / 2) : 0;
       document.getElementById("xStart").textContent = chartTimes.length ? chartTimes[0] : "-";
       document.getElementById("xMid").textContent = chartTimes.length ? chartTimes[middleIndex] : "-";

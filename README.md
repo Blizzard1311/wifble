@@ -171,6 +171,8 @@ tool, not an exact people counter or a finalized universal remote.
   - `CAT1` can POST the current `HEAT` snapshot as JSON over `4G`
 - the current upload cadence is:
   - one automatic `CAT1` upload every `15 minutes`
+  - the first automatic upload also waits for the first `15-minute` interval instead of uploading immediately at boot
+  - background scan/upload continues regardless of whether the UI is left on `HEAT`, `CAT1`, or `HOME`
   - one immediate extra upload if the current `heat` value changes by more than `50`
   - manual upload from the `CAT1` page still works with `Enter`
 - if only a `Grove` cable is available, the intended prototype wiring is:

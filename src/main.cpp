@@ -848,7 +848,7 @@ bool trigger_cat1_heat_upload() {
 
 bool should_auto_upload_cat1_heat() {
   if (g_cat1_last_upload_attempt_ms == 0) {
-    return true;
+    return millis() >= kCat1AutoUploadIntervalMs;
   }
 
   if (g_cat1_last_uploaded_heat >= 0) {
@@ -2334,8 +2334,7 @@ void loop() {
     }
   }
 
-  if (is_heat_live_screen(g_screen) &&
-      millis() - g_last_scan_ms >= kAutoScanIntervalMs) {
+  if (millis() - g_last_scan_ms >= kAutoScanIntervalMs) {
     run_scan_cycle();
   }
 

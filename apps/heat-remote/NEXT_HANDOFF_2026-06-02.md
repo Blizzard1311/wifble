@@ -1,7 +1,8 @@
 # Cardputer-Adv Handoff
 
 Date: 2026-06-02
-Workspace: `/Users/Kenneth/Documents/M5 STACK`
+Workspace root: `/Users/Kenneth/Documents/M5 STACK`
+App path: `/Users/Kenneth/Documents/M5 STACK/apps/heat-remote`
 
 ## Current state
 
@@ -10,7 +11,7 @@ Workspace: `/Users/Kenneth/Documents/M5 STACK`
 The physical Cardputer-Adv has been restored to the user-defined original baseline:
 
 - backup image:
-  `/Users/Kenneth/Documents/M5 STACK/backups/cardputer-adv-flash-20260531-162550-8mb.bin`
+  `/Users/Kenneth/Documents/M5 STACK/device/backups/cardputer-adv-flash-20260531-162550-8mb.bin`
 
 The user confirmed the device is back to the expected original state and local code was not affected.
 
@@ -25,7 +26,7 @@ The custom project source is still present locally and includes:
 
 Primary source entrypoint:
 
-- `/Users/Kenneth/Documents/M5 STACK/src/main.cpp`
+- `/Users/Kenneth/Documents/M5 STACK/apps/heat-remote/src/main.cpp`
 
 ## What was validated successfully
 
@@ -128,9 +129,10 @@ If instability appears again, stop cloud testing and restore the original baseli
 ## Files the next agent should read first
 
 1. `/Users/Kenneth/Documents/M5 STACK/README.md`
-2. `/Users/Kenneth/Documents/M5 STACK/DEVELOPMENT_RECORD_2026-06-02.md`
-3. `/Users/Kenneth/Documents/M5 STACK/EZDATA2_FIELD_MAP.md`
-4. `/Users/Kenneth/Documents/M5 STACK/src/main.cpp`
+2. `/Users/Kenneth/Documents/M5 STACK/apps/heat-remote/README.md`
+3. `/Users/Kenneth/Documents/M5 STACK/apps/heat-remote/DEVELOPMENT_RECORD_2026-06-02.md`
+4. `/Users/Kenneth/Documents/M5 STACK/apps/heat-remote/EZDATA2_FIELD_MAP.md`
+5. `/Users/Kenneth/Documents/M5 STACK/apps/heat-remote/src/main.cpp`
 
 ## Practical recommendation
 

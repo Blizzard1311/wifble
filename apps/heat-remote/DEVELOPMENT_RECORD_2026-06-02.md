@@ -1,7 +1,8 @@
 # Cardputer-Adv Development Record
 
 Date: 2026-06-02
-Workspace: `/Users/Kenneth/Documents/M5 STACK`
+Workspace root: `/Users/Kenneth/Documents/M5 STACK`
+App path: `/Users/Kenneth/Documents/M5 STACK/apps/heat-remote`
 Device: `M5Stack Cardputer-Adv`
 
 ## 1. Objective
@@ -108,7 +109,7 @@ Because of that, the workflow was stopped and the device was restored.
 
 The device backup used as the user-defined original system baseline is:
 
-- `/Users/Kenneth/Documents/M5 STACK/backups/cardputer-adv-flash-20260531-162550-8mb.bin`
+- `/Users/Kenneth/Documents/M5 STACK/device/backups/cardputer-adv-flash-20260531-162550-8mb.bin`
 
 This image was restored successfully multiple times.
 
@@ -121,33 +122,27 @@ Current confirmed state:
 ## 6. Important file references
 
 - Main firmware source:
-  - `/Users/Kenneth/Documents/M5 STACK/src/main.cpp`
+  - `/Users/Kenneth/Documents/M5 STACK/apps/heat-remote/src/main.cpp`
 - Cloud config:
-  - `/Users/Kenneth/Documents/M5 STACK/src/heat_cloud_config.h`
-  - `/Users/Kenneth/Documents/M5 STACK/src/heat_cloud_config.local.h`
-  - `/Users/Kenneth/Documents/M5 STACK/src/heat_cloud_config.local.example.h`
+  - `/Users/Kenneth/Documents/M5 STACK/apps/heat-remote/src/heat_cloud_config.h`
+  - `/Users/Kenneth/Documents/M5 STACK/apps/heat-remote/src/heat_cloud_config.local.h`
+  - `/Users/Kenneth/Documents/M5 STACK/apps/heat-remote/src/heat_cloud_config.local.example.h`
 - Firmware project config:
-  - `/Users/Kenneth/Documents/M5 STACK/platformio.ini`
+  - `/Users/Kenneth/Documents/M5 STACK/apps/heat-remote/platformio.ini`
 - Main readme:
-  - `/Users/Kenneth/Documents/M5 STACK/README.md`
+  - `/Users/Kenneth/Documents/M5 STACK/apps/heat-remote/README.md`
 - EzData notes:
-  - `/Users/Kenneth/Documents/M5 STACK/EZDATA2_FIELD_MAP.md`
+  - `/Users/Kenneth/Documents/M5 STACK/apps/heat-remote/EZDATA2_FIELD_MAP.md`
 - UI preview:
-  - `/Users/Kenneth/Documents/M5 STACK/preview/index.html`
-  - `/Users/Kenneth/Documents/M5 STACK/preview/styles.css`
-  - `/Users/Kenneth/Documents/M5 STACK/preview/app.js`
+  - `/Users/Kenneth/Documents/M5 STACK/apps/heat-remote/preview/index.html`
+  - `/Users/Kenneth/Documents/M5 STACK/apps/heat-remote/preview/styles.css`
+  - `/Users/Kenneth/Documents/M5 STACK/apps/heat-remote/preview/app.js`
 
 ## 7. Repo / source control note
 
-This folder is a Git repository, but it currently has:
-
-- no commits yet
-- all project files present only as local working tree files
-
-That means:
-
-- source code exists locally
-- but there is no Git history checkpoint yet
+This workspace is a Git repository. If this note is revisited later, verify the
+current branch and commit history from the live repository state instead of
+treating this dated note as authoritative.
 
 ## 8. Current conclusion
 

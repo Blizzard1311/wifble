@@ -10,7 +10,7 @@ On the server, overwrite:
 
 with:
 
-- [server.py](/Users/Kenneth/Documents/M5%20STACK/server/cat1_ingest/server.py)
+- [server.py](/Users/Kenneth/Documents/M5%20STACK/apps/heat-remote/server/cat1_ingest/server.py)
 
 ## 2. Restart the service
 
@@ -33,7 +33,7 @@ In your existing server block, add:
 
 Reference snippet:
 
-- [nginx.snippet.conf](/Users/Kenneth/Documents/M5%20STACK/server/cat1_ingest/nginx.snippet.conf)
+- [nginx.snippet.conf](/Users/Kenneth/Documents/M5%20STACK/apps/heat-remote/server/cat1_ingest/nginx.snippet.conf)
 
 Then run:
 

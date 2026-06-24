@@ -1,7 +1,8 @@
 # Official UiFlow2 Validation Plan
 
 Date: 2026-06-02
-Workspace: `/Users/Kenneth/Documents/M5 STACK`
+Workspace root: `/Users/Kenneth/Documents/M5 STACK`
+App path: `/Users/Kenneth/Documents/M5 STACK/apps/heat-remote`
 Device: `M5Stack Cardputer-Adv`
 
 ## Goal
@@ -173,6 +174,6 @@ Only after this official validation succeeds:
 
 ## Related files
 
-- `/Users/Kenneth/Documents/M5 STACK/DEVELOPMENT_RECORD_2026-06-02.md`
-- `/Users/Kenneth/Documents/M5 STACK/NEXT_HANDOFF_2026-06-02.md`
-- `/Users/Kenneth/Documents/M5 STACK/README.md`
+- `/Users/Kenneth/Documents/M5 STACK/apps/heat-remote/DEVELOPMENT_RECORD_2026-06-02.md`
+- `/Users/Kenneth/Documents/M5 STACK/apps/heat-remote/NEXT_HANDOFF_2026-06-02.md`
+- `/Users/Kenneth/Documents/M5 STACK/apps/heat-remote/README.md`
